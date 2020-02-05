@@ -5,6 +5,7 @@ namespace NorthwindRestApi.Models
 {
     public partial class OrderDetails
     {
+        public int DetailId { get; set; }
         public int OrderId { get; set; }
         public int ProductId { get; set; }
         public decimal UnitPrice { get; set; }
