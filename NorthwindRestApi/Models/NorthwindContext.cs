@@ -20,9 +20,9 @@ namespace NorthwindRestApi.Models
         public virtual DbSet<CustomerCustomerDemo> CustomerCustomerDemo { get; set; }
         public virtual DbSet<CustomerDemographics> CustomerDemographics { get; set; }
         public virtual DbSet<Customers> Customers { get; set; }
+        public virtual DbSet<Documentation> Documentation { get; set; }
         public virtual DbSet<Employees> Employees { get; set; }
         public virtual DbSet<EmployeeTerritories> EmployeeTerritories { get; set; }
-        public virtual DbSet<Logins> Logins { get; set; }
         public virtual DbSet<OrderDetails> OrderDetails { get; set; }
         public virtual DbSet<Orders> Orders { get; set; }
         public virtual DbSet<Products> Products { get; set; }
@@ -31,15 +31,12 @@ namespace NorthwindRestApi.Models
         public virtual DbSet<Suppliers> Suppliers { get; set; }
         public virtual DbSet<Territories> Territories { get; set; }
 
-        // Unable to generate entity type for table 'dbo.Nimet_tmp'. Please see the warning messages.
-        // Unable to generate entity type for table 'dbo.employees_bak'. Please see the warning messages.
-
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
             if (!optionsBuilder.IsConfigured)
             {
 #warning To protect potentially sensitive information in your connection string, you should move it out of source code. See http://go.microsoft.com/fwlink/?LinkId=723263 for guidance on storing connection strings.
-                optionsBuilder.UseSqlServer("Server=DESKTOP-S02JQH8\\SQLPETRILA;Database=Northwind;Trusted_Connection=True;");
+                optionsBuilder.UseSqlServer("Server=DESKTOP-UK2QOVP\\PETRILA;Database=Northwind;Trusted_Connection=True;");
             }
         }
 
@@ -185,6 +182,19 @@ namespace NorthwindRestApi.Models
                 entity.Property(e => e.Region).HasMaxLength(15);
             });
 
+            modelBuilder.Entity<Documentation>(entity =>
+            {
+                entity.Property(e => e.DocumentationId).HasColumnName("DocumentationID");
+
+                entity.Property(e => e.AvailableRoute).HasMaxLength(400);
+
+                entity.Property(e => e.Description).HasMaxLength(2000);
+
+                entity.Property(e => e.Keycode).HasMaxLength(10);
+
+                entity.Property(e => e.Method).HasMaxLength(20);
+            });
+
             modelBuilder.Entity<Employees>(entity =>
             {
                 entity.HasKey(e => e.EmployeeId);
@@ -263,21 +273,6 @@ namespace NorthwindRestApi.Models
                     .HasConstraintName("FK_EmployeeTerritories_Territories");
             });
 
-            modelBuilder.Entity<Logins>(entity =>
-            {
-                entity.HasKey(e => e.LoginId);
-
-                entity.Property(e => e.LoginId).HasColumnName("LoginID");
-
-                entity.Property(e => e.PassWord)
-                    .IsRequired()
-                    .HasMaxLength(50);
-
-                entity.Property(e => e.UserName)
-                    .IsRequired()
-                    .HasMaxLength(50);
-            });
-
             modelBuilder.Entity<OrderDetails>(entity =>
             {
                 entity.HasKey(e => new { e.OrderId, e.ProductId });
@@ -294,13 +289,13 @@ namespace NorthwindRestApi.Models
 
                 entity.Property(e => e.ProductId).HasColumnName("ProductID");
 
-                entity.Property(e => e.DetailId)
-                    .HasColumnName("DetailID")
-                    .ValueGeneratedOnAdd();
+                entity.Property(e => e.Discount).HasDefaultValueSql("(0)");
 
-                entity.Property(e => e.Quantity).HasDefaultValueSql("((1))");
+                entity.Property(e => e.Quantity).HasDefaultValueSql("(1)");
 
-                entity.Property(e => e.UnitPrice).HasColumnType("money");
+                entity.Property(e => e.UnitPrice)
+                    .HasColumnType("money")
+                    .HasDefaultValueSql("(0)");
 
                 entity.HasOne(d => d.Order)
                     .WithMany(p => p.OrderDetails)
@@ -412,10 +407,6 @@ namespace NorthwindRestApi.Models
 
                 entity.Property(e => e.ReorderLevel).HasDefaultValueSql("(0)");
 
-                entity.Property(e => e.Rpaprocessed)
-                    .HasColumnName("RPAProcessed")
-                    .HasMaxLength(50);
-
                 entity.Property(e => e.SupplierId).HasColumnName("SupplierID");
 
                 entity.Property(e => e.UnitPrice)
@@ -462,13 +453,6 @@ namespace NorthwindRestApi.Models
                     .HasMaxLength(40);
 
                 entity.Property(e => e.Phone).HasMaxLength(24);
-
-                entity.Property(e => e.RegionId).HasColumnName("RegionID");
-
-                entity.HasOne(d => d.Region)
-                    .WithMany(p => p.Shippers)
-                    .HasForeignKey(d => d.RegionId)
-                    .HasConstraintName("FK_Shippers_Region");
             });
 
             modelBuilder.Entity<Suppliers>(entity =>

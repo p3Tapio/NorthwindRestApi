@@ -21,23 +21,21 @@ namespace NorthwindRestApi.Controllers
             context.Dispose();
             return orderDetails;
         }
-        [HttpGet]
-        [Route("{id}")] 
-        public ActionResult GetOrderDetailById(int id)
+        [HttpGet] 
+        [Route("{orderid}/{productid}")]
+        public ActionResult GetOrderDetailByIds(int orderId, int productId)
         {
             NorthwindContext context = new NorthwindContext();
-            var ordersByOrderId = (from ord in context.OrderDetails
-                                    where ord.DetailId == id
-                                    select ord).ToList();
-            context.Dispose(); 
+            OrderDetails order = context.OrderDetails.Find(orderId, productId);  
+            context.Dispose();
 
-            if (ordersByOrderId.Any())
+            if (order!=null)
             {
-                return Ok(ordersByOrderId);
+                return Ok(order);
             }
             else
             {
-                return NotFound("Order details for id " + id + " not found");
+                return NotFound("Order detail not found.");
             }
 
         }
@@ -81,23 +79,21 @@ namespace NorthwindRestApi.Controllers
             }
         }
         [HttpPut]
-        [Route("update/{detailid}")] // 1. 2-part composite key, joten find ei toimi, tai 2 update/{detailid}/{orderid} niin ei löydä 
-                                     // Pura aikaisempi PK OrderIdstä?
-        public ActionResult UpdateOrderDetail([FromBody] OrderDetails orderInput, int detailId) {
+        [Route("update/{orderid}/{productid}")]
+        public ActionResult UpdateOrderDetail([FromBody] OrderDetails orderInput, int orderId, int productId) {
             NorthwindContext context = new NorthwindContext();
 
             try {
-                OrderDetails orderDb = context.OrderDetails.Find(detailId);
+                OrderDetails orderDb = context.OrderDetails.Find(orderId, productId);
 
                 if (orderDb != null) {
-                    orderDb.OrderId = orderInput.OrderId;
-                    orderDb.ProductId = orderInput.ProductId;
+
                     orderDb.UnitPrice = orderInput.UnitPrice;
                     orderDb.Quantity = orderInput.Quantity;
                     orderDb.Discount = orderInput.Discount;
 
                     context.SaveChanges();
-                    return Ok("Order detail " + orderDb.DetailId + " updated.");
+                    return Ok("Order detail updated.");
 
                 } else {
                     return NotFound("Order detail not found");
@@ -108,19 +104,18 @@ namespace NorthwindRestApi.Controllers
                 context.Dispose();
             }
         }
-        // Sama Exception: two part composite "Key"
         [HttpDelete]
-        [Route("delete/{id}")]
-        public ActionResult DeleteOrderDetail(int id) {
+        [Route("delete/{orderid}/{productid}")]
+        public ActionResult DeleteOrderDetail(int orderId, int productId) {
             NorthwindContext context = new NorthwindContext();
             try {
-                OrderDetails ord = context.OrderDetails.Find(id);
+                OrderDetails ord = context.OrderDetails.Find(orderId, productId);
                 if (ord != null) {
                     context.OrderDetails.Remove(ord);
                     context.SaveChanges();
-                    return Ok("Order " + id + " deleted.");
+                    return Ok("Order detail deleted.");
                 } else {
-                    return NotFound("Order " + id + " not found");
+                    return NotFound("Order detail not found");
                 }
             } catch (Exception ex) {
                 return BadRequest("Delete failed\n" + ex.GetType() + ": " + ex.Message);

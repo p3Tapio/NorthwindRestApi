@@ -20,7 +20,6 @@ namespace NorthwindRestApi.Models
         public short? UnitsOnOrder { get; set; }
         public short? ReorderLevel { get; set; }
         public bool? Discontinued { get; set; }
-        public string Rpaprocessed { get; set; }
 
         public Categories Category { get; set; }
         public Suppliers Supplier { get; set; }
