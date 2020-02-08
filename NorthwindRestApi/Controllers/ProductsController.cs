@@ -134,9 +134,9 @@ namespace NorthwindRestApi.Controllers
                     return NotFound("Product '" + id + "' not found.");
                 }
             }
-            catch
+            catch (Exception ex)
             {
-                return BadRequest("Delete failed");
+                return BadRequest("Delete failed\n"+ex.GetType()+": "+ex.Message);
             }
             finally
             {
