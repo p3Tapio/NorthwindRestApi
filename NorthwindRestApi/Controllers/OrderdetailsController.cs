@@ -44,9 +44,11 @@ namespace NorthwindRestApi.Controllers
         public ActionResult GetOrderDetailsByProductId(int id)
         {
             NorthwindContext context = new NorthwindContext();
-            var ordersByProductId = from prod in context.OrderDetails
+            var ordersByProductId = (from prod in context.OrderDetails
                                     where prod.ProductId == id
-                                    select prod;
+                                    select prod).ToList();
+            context.Dispose(); 
+
             if (ordersByProductId.Any())
             {
                 return Ok(ordersByProductId);

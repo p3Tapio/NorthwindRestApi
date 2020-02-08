@@ -42,6 +42,8 @@ namespace NorthwindRestApi.Controllers
 
                         }).ToList();
 
+            context.Dispose(); 
+
             return emps;
 
         }
