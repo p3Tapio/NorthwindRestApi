@@ -23,6 +23,7 @@ namespace NorthwindRestApi.Models
         public virtual DbSet<Documentation> Documentation { get; set; }
         public virtual DbSet<Employees> Employees { get; set; }
         public virtual DbSet<EmployeeTerritories> EmployeeTerritories { get; set; }
+        public virtual DbSet<Logins> Logins { get; set; }
         public virtual DbSet<OrderDetails> OrderDetails { get; set; }
         public virtual DbSet<Orders> Orders { get; set; }
         public virtual DbSet<Products> Products { get; set; }
@@ -271,6 +272,25 @@ namespace NorthwindRestApi.Models
                     .HasForeignKey(d => d.TerritoryId)
                     .OnDelete(DeleteBehavior.ClientSetNull)
                     .HasConstraintName("FK_EmployeeTerritories_Territories");
+            });
+
+            modelBuilder.Entity<Logins>(entity =>
+            {
+                entity.HasKey(e => e.LoginId);
+
+                entity.Property(e => e.LoginId).HasColumnName("LoginID");
+
+                entity.Property(e => e.AccesslevelId).HasColumnName("AccesslevelID");
+
+                entity.Property(e => e.Email).HasMaxLength(150);
+
+                entity.Property(e => e.Firstname).HasMaxLength(50);
+
+                entity.Property(e => e.Lastname).HasMaxLength(50);
+
+                entity.Property(e => e.Password).HasMaxLength(50);
+
+                entity.Property(e => e.Username).HasMaxLength(50);
             });
 
             modelBuilder.Entity<OrderDetails>(entity =>
