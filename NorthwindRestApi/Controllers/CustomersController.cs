@@ -23,12 +23,39 @@ namespace NwRESTapi.Controllers
         }
         [HttpGet]
         [Route("R")]
-        public IActionResult GetSomeCustomers(int offset, int limit)
+        public IActionResult GetSomeCustomers(int offset, int limit, string country)
         {
+
             NorthwindContext context = new NorthwindContext();
-            List<Customers> customers = context.Customers.Skip(offset).Take(limit).ToList();
-            context.Dispose();
-            return Ok(customers);
+            List<Customers> customers = new List<Customers>();
+
+            try
+            {
+                if (country != null)
+                {
+                    customers = context.Customers.Where(x => x.Country == country).Take(limit).ToList();
+                }
+                else
+                {
+                    customers = context.Customers.Skip(offset).Take(limit).ToList();
+                }
+                if (customers.Any())
+                {
+                    return Ok(customers);
+                }
+                else
+                {
+                    return NotFound("No customers found.");
+                }
+            }
+            catch
+            {
+                return BadRequest();
+            }
+            finally
+            {
+                context.Dispose();
+            }
 
         }
         [HttpGet]
