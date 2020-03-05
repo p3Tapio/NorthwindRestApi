@@ -80,9 +80,12 @@ namespace NwRESTapi.Controllers
         {
 
             NorthwindContext context = new NorthwindContext();
-            var customers = from cust in context.Customers
+            var customers = (from cust in context.Customers
                             where cust.Country == country
-                            select cust;
+                            select cust).ToList();
+
+            context.Dispose(); 
+
             if (customers.Any())
             {
                 return Ok(customers);
@@ -91,6 +94,16 @@ namespace NwRESTapi.Controllers
             {
                 return NotFound("Customers not found");
             }
+        }
+        [HttpGet]
+        [Route("country")]
+        public ActionResult GetDistinctCountries()
+        {
+            NorthwindContext context = new NorthwindContext();
+            var countríes = ((from x in context.Customers
+                              select x.Country).Distinct()).ToList();
+            context.Dispose(); 
+            return Ok(countríes); 
         }
         [HttpPost]
         [Route("")]
