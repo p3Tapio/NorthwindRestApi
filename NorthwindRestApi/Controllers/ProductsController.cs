@@ -13,6 +13,56 @@ namespace NorthwindRestApi.Controllers
     public class ProductsController : ControllerBase
     {
         [HttpGet]
+        [Route("R")]
+        public IActionResult GetSomeProducts(int offset, int limit)
+        {
+            NorthwindContext context = new NorthwindContext();
+            try
+            {
+                var products = (from p in context.Products
+                                join cats in context.Categories
+                                on p.CategoryId equals cats.CategoryId
+                                orderby p.ProductId
+                                select new
+                                {
+                                    ProductId = p.ProductId,
+                                    ProductName = p.ProductName,
+                                    CategoryId = cats.CategoryId,
+                                    CategoryName = cats.CategoryName,
+                                    CategoryDescription = cats.Description,
+                                    SupplierId = p.SupplierId,
+                                    Quantity = p.QuantityPerUnit,
+                                    UnitPrice = p.UnitPrice,
+                                    UnitsInStock = p.UnitsInStock,
+                                    UnitsOnOrder = p.UnitsOnOrder,
+                                    ReorderLevel = p.ReorderLevel,
+                                    Discontinued = p.Discontinued
+
+                                }).Skip(offset).Take(limit).ToList();
+
+
+
+                if (products.Any())
+                {
+                    return Ok(products);
+                }
+                else
+                {
+                    return NotFound("No prods");
+                }
+            }
+            catch
+            {
+                return BadRequest();
+            }
+            finally
+            {
+
+                context.Dispose();
+            }
+
+        }
+        [HttpGet]
         [Route("")]
         public List<Products> GetAllProducts()
         {
@@ -34,19 +84,38 @@ namespace NorthwindRestApi.Controllers
             }
             else
             {
-                return NotFound("Product id "+id +" not found");
+                return NotFound("Product id " + id + " not found");
             }
         }
         [HttpGet]
         [Route("category/{cat}")]
         public ActionResult GetProductsByCategoryId(int cat)
         {
-            NorthwindContext context = new NorthwindContext();
-            var products = (from prod in context.Products
-                            where prod.CategoryId == cat
-                            select prod).ToList();
 
-            context.Dispose(); 
+            NorthwindContext context = new NorthwindContext();
+            var products = (from p in context.Products
+                            join cats in context.Categories
+                            on p.CategoryId equals cats.CategoryId
+                            where p.CategoryId == cat
+                            orderby p.ProductId
+                            select new
+                            {
+                                ProductId = p.ProductId,
+                                ProductName = p.ProductName,
+                                CategoryId = cats.CategoryId,
+                                CategoryName = cats.CategoryName,
+                                CategoryDescription = cats.Description,
+                                SupplierId = p.SupplierId,
+                                Quantity = p.QuantityPerUnit,
+                                UnitPrice = p.UnitPrice,
+                                UnitsInStock = p.UnitsInStock,
+                                UnitsOnOrder = p.UnitsOnOrder,
+                                ReorderLevel = p.ReorderLevel,
+                                Discontinued = p.Discontinued
+
+                            }).ToList();
+
+            context.Dispose();
 
             if (products.Any())
             {
@@ -136,12 +205,23 @@ namespace NorthwindRestApi.Controllers
             }
             catch (Exception ex)
             {
-                return BadRequest("Delete failed\n"+ex.GetType()+": "+ex.Message);
+                return BadRequest("Delete failed\n" + ex.GetType() + ": " + ex.Message);
             }
             finally
             {
                 context.Dispose();
             }
+        }
+        [HttpGet]
+        [Route("categories")]
+        public ActionResult GetDistinctCats()
+        {
+            NorthwindContext context = new NorthwindContext();
+
+            var categories = (from x in context.Categories
+                              select x).ToList();
+            context.Dispose();
+            return Ok(categories);
         }
     }
 }
