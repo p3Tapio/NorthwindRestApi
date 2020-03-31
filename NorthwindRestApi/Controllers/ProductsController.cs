@@ -22,6 +22,8 @@ namespace NorthwindRestApi.Controllers
                 var products = (from p in context.Products
                                 join cats in context.Categories
                                 on p.CategoryId equals cats.CategoryId
+                                join sup in context.Suppliers
+                                on p.SupplierId equals sup.SupplierId
                                 orderby p.ProductId
                                 select new
                                 {
@@ -31,6 +33,7 @@ namespace NorthwindRestApi.Controllers
                                     CategoryName = cats.CategoryName,
                                     CategoryDescription = cats.Description,
                                     SupplierId = p.SupplierId,
+                                    Suppliername = sup.CompanyName,
                                     Quantity = p.QuantityPerUnit,
                                     UnitPrice = p.UnitPrice,
                                     UnitsInStock = p.UnitsInStock,
@@ -64,12 +67,35 @@ namespace NorthwindRestApi.Controllers
         }
         [HttpGet]
         [Route("")]
-        public List<Products> GetAllProducts()
+        public ActionResult GetAllProducts()
         {
+
             NorthwindContext context = new NorthwindContext();
-            var products = context.Products.ToList();
+            var products = (from p in context.Products
+                            join cats in context.Categories
+                            on p.CategoryId equals cats.CategoryId
+                            join sup in context.Suppliers
+                            on p.SupplierId equals sup.SupplierId
+                            orderby p.ProductId
+                            select new
+                            {
+                                ProductId = p.ProductId,
+                                ProductName = p.ProductName,
+                                CategoryId = cats.CategoryId,
+                                CategoryName = cats.CategoryName,
+                                CategoryDescription = cats.Description,
+                                SupplierId = p.SupplierId,
+                                Suppliername = sup.CompanyName,
+                                Quantity = p.QuantityPerUnit,
+                                UnitPrice = p.UnitPrice,
+                                UnitsInStock = p.UnitsInStock,
+                                UnitsOnOrder = p.UnitsOnOrder,
+                                ReorderLevel = p.ReorderLevel,
+                                Discontinued = p.Discontinued
+
+                            }).ToList();
             context.Dispose();
-            return products;
+            return Ok(products);
         }
         [HttpGet]
         [Route("{id}")]
@@ -77,13 +103,38 @@ namespace NorthwindRestApi.Controllers
         {
             NorthwindContext context = new NorthwindContext();
             Products product = context.Products.Find(id);
-            context.Dispose();
+
             if (product != null)
             {
-                return Ok(product);
+                var prod = (from p in context.Products
+                            join cats in context.Categories
+                            on p.CategoryId equals cats.CategoryId
+                            join sup in context.Suppliers
+                            on p.SupplierId equals sup.SupplierId
+                            where p.ProductId == id
+                            select new
+                            {
+                                ProductId = p.ProductId,
+                                ProductName = p.ProductName,
+                                CategoryId = cats.CategoryId,
+                                CategoryName = cats.CategoryName,
+                                CategoryDescription = cats.Description,
+                                SupplierId = p.SupplierId,
+                                Suppliername = sup.CompanyName,
+                                Quantity = p.QuantityPerUnit,
+                                UnitPrice = p.UnitPrice,
+                                UnitsInStock = p.UnitsInStock,
+                                UnitsOnOrder = p.UnitsOnOrder,
+                                ReorderLevel = p.ReorderLevel,
+                                Discontinued = p.Discontinued
+
+                            }).ToList();
+                context.Dispose();
+                return Ok(prod);
             }
             else
             {
+                context.Dispose();
                 return NotFound("Product id " + id + " not found");
             }
         }
@@ -96,6 +147,8 @@ namespace NorthwindRestApi.Controllers
             var products = (from p in context.Products
                             join cats in context.Categories
                             on p.CategoryId equals cats.CategoryId
+                            join sup in context.Suppliers
+                            on p.SupplierId equals sup.SupplierId
                             where p.CategoryId == cat
                             orderby p.ProductId
                             select new
@@ -106,6 +159,7 @@ namespace NorthwindRestApi.Controllers
                                 CategoryName = cats.CategoryName,
                                 CategoryDescription = cats.Description,
                                 SupplierId = p.SupplierId,
+                                Suppliername = sup.CompanyName,
                                 Quantity = p.QuantityPerUnit,
                                 UnitPrice = p.UnitPrice,
                                 UnitsInStock = p.UnitsInStock,
@@ -222,6 +276,17 @@ namespace NorthwindRestApi.Controllers
                               select x).ToList();
             context.Dispose();
             return Ok(categories);
+        }
+        [HttpGet]
+        [Route("suppliers")]
+        public ActionResult GetSuppliers()
+        {
+            NorthwindContext context = new NorthwindContext();
+
+            var suppliers = (from x in context.Suppliers
+                             select x).ToList();
+            context.Dispose();
+            return Ok(suppliers);
         }
     }
 }
