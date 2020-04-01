@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.AspNetCore.Mvc;
 using NorthwindRestApi.Models;
+using NorthwindRestApi.Tools; 
 
 namespace NorthwindRestApi.Controllers
 {
@@ -39,9 +40,18 @@ namespace NorthwindRestApi.Controllers
             NorthwindContext context = new NorthwindContext();
             try
             {
-                context.Logins.Add(login);
+           
+                Logins newLogin = new Logins();
+                newLogin.Firstname = login.Firstname;
+                newLogin.Lastname = login.Lastname;
+                newLogin.Email = login.Email;
+                newLogin.Username = login.Username;
+                newLogin.Password = PasswordHash.Hasher(login.Password);
+                newLogin.AccesslevelId = login.AccesslevelId; 
+
+                context.Logins.Add(newLogin);
                 context.SaveChanges();
-                return "Login details for created.";
+                return "Login details created.";
             }
             catch (Exception ex)
             {
@@ -67,7 +77,7 @@ namespace NorthwindRestApi.Controllers
         }
         [HttpPut]
         [Route("{id}")]
-        public ActionResult UpdateLogin([FromBody] Logins loginInput, string id)
+        public ActionResult UpdateLogin([FromBody] Logins loginInput, int id)
         {
             NorthwindContext context = new NorthwindContext();
             try
@@ -75,12 +85,12 @@ namespace NorthwindRestApi.Controllers
                 Logins loginDb = context.Logins.Find(id);
                 if (loginDb != null)
                 {
-                    loginDb.LoginId = loginInput.LoginId;
+
                     loginDb.Firstname = loginInput.Firstname;
                     loginDb.Lastname = loginInput.Lastname;
                     loginDb.Email = loginInput.Email;
                     loginDb.Username = loginInput.Username;
-                    loginDb.Password = loginInput.Password;
+                    //loginDb.Password = loginInput.Password;
                     loginDb.AccesslevelId = loginInput.AccesslevelId;
 
                     context.SaveChanges();
@@ -102,7 +112,7 @@ namespace NorthwindRestApi.Controllers
         }
         [HttpDelete]
         [Route("delete/{id}")]
-        public ActionResult DeleteLogin(string id)
+        public ActionResult DeleteLogin(int id)
         {
             NorthwindContext context = new NorthwindContext();
             try
@@ -112,11 +122,11 @@ namespace NorthwindRestApi.Controllers
                 {
                     context.Logins.Remove(login);
                     context.SaveChanges();
-                    return Ok("Customer '" + login.LoginId + "' deleted.");
+                    return Ok("User '" + login.LoginId + "' deleted.");
                 }
                 else
                 {
-                    return NotFound("Customer '" + id + "' not found.");
+                    return NotFound("User '" + id + "' not found.");
                 }
             }
             catch
@@ -131,3 +141,6 @@ namespace NorthwindRestApi.Controllers
 
     }
 }
+// login:
+// ks https://github.com/p3Tapio/OmniaPruju/blob/master/UsersCtrls/Tools/UserService.cs
+// tarviit väliaikaisesti feikki tokenin tai sen auth osan tuolta, tsekkaa php-versiosta vaikka miten toteutit sen
