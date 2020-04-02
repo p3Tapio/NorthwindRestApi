@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.AspNetCore.Mvc;
 using NorthwindRestApi.Models;
-using NorthwindRestApi.Tools; 
+using NorthwindRestApi.Tools;
 
 namespace NorthwindRestApi.Controllers
 {
@@ -11,11 +11,92 @@ namespace NorthwindRestApi.Controllers
     [ApiController]
     public class LoginsController : ControllerBase
     {
+
+        [HttpPost]
+        [Route("singin")]
+        public IActionResult Authenticate([FromBody] Logins login)
+        {
+            NorthwindContext context = new NorthwindContext();
+            try
+            {
+                var pass = PasswordHash.Hasher(login.Password);
+                var log = context.Logins.SingleOrDefault(x => x.Username == login.Username && x.Password == pass);
+
+                if (log == null)
+                {
+                    return BadRequest("{ \"message\":\"Väärä käyttäjätunnus tai salasana\"}");
+                }
+                else
+                {
+                    string token = TokenGenerator.GenerateToken(log.Username);
+
+                    string userJson = $"{{ \"user\": {{" +
+                        $"\"userId\": \"{log.LoginId}\"," +
+                        $"\"username\":\"{log.Username}\"," +
+                        $"\"email\":\"{log.Email}\"}}," +
+                        $"\"token\":\"{token}\"}}";
+
+                    return Ok(userJson);
+                }
+
+            }
+            catch (Exception ex)
+            {
+                return BadRequest("{\"message\":\"Woops, joku meni vikaan! " + ex.GetType() + " - " + ex.Message + "\"}");
+            }
+            finally
+            {
+                context.Dispose();
+            }
+
+
+        }
+
+        [HttpPost]
+        [Route("")]
+        public IActionResult CreateNewLogin([FromBody] Logins login)
+        {
+
+            NorthwindContext context = new NorthwindContext();
+            try
+            {
+                var check = context.Logins.SingleOrDefault(x => x.Username == login.Username);
+
+                if (check == null)
+                {
+                    Logins newLogin = new Logins();
+                    newLogin.Firstname = login.Firstname;
+                    newLogin.Lastname = login.Lastname;
+                    newLogin.Email = login.Email;
+                    newLogin.Username = login.Username;
+                    newLogin.Password = PasswordHash.Hasher(login.Password);
+                    newLogin.AccesslevelId = login.AccesslevelId;
+
+                    context.Logins.Add(newLogin);
+                    context.SaveChanges();
+                    return Ok("Käyttäjä luotu.");
+                }
+                else
+                {
+                    var kaytossa = "{\"message\":\"Käyttäjätunnus " + login.Username + " on jo käytössä. Valitse toinen tunnus\"}";
+                    return BadRequest(kaytossa);
+                }
+            }
+            catch (Exception ex)
+            {
+                var error = "{\"message\":\"Woops, joku meni vikaan! " + ex.GetType() + " - " + ex.Message + "\"}";
+                return BadRequest(error);
+            }
+            finally
+            {
+                context.Dispose();
+            }
+        }
         [HttpGet]
         [Route("")]
         public List<Logins> GetAllLogins()
         {
-   
+
             NorthwindContext context = new NorthwindContext();
             var logs = (from log in context.Logins
                         select new Logins
@@ -31,37 +112,6 @@ namespace NorthwindRestApi.Controllers
 
             context.Dispose();
             return logs;
-        }
-        [HttpPost]
-        [Route("")]
-        public string CreateNewLogin([FromBody] Logins login)
-        {
-
-            NorthwindContext context = new NorthwindContext();
-            try
-            {
-           
-                Logins newLogin = new Logins();
-                newLogin.Firstname = login.Firstname;
-                newLogin.Lastname = login.Lastname;
-                newLogin.Email = login.Email;
-                newLogin.Username = login.Username;
-                newLogin.Password = PasswordHash.Hasher(login.Password);
-                newLogin.AccesslevelId = login.AccesslevelId; 
-
-                context.Logins.Add(newLogin);
-                context.SaveChanges();
-                return "Login details created.";
-            }
-            catch (Exception ex)
-            {
-                return "Woops, something went wrong! \n" + ex.GetType() + ": " + ex.Message;
-            }
-            finally
-            {
-                context.Dispose();
-            }
-
         }
         [HttpGet]
         [Route("{lastname}")]
