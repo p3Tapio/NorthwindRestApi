@@ -191,6 +191,3 @@ namespace NorthwindRestApi.Controllers
 
     }
 }
-// login:
-// ks https://github.com/p3Tapio/OmniaPruju/blob/master/UsersCtrls/Tools/UserService.cs
-// tarviit väliaikaisesti feikki tokenin tai sen auth osan tuolta, tsekkaa php-versiosta vaikka miten toteutit sen
